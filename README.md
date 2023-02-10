@@ -1,5 +1,5 @@
 # EuroMapper Application 
-The goal of this application is to help tourists in Europe navigate through inter and intracity transport within the European countries. This app will provide a solution combining information from public transit operators and authorities with live information from GTFS runtime and other API's to aggregate all datas needed to make it work. An app like this must be very versatile and this is the focus. To have everything on a spot; from it being a map, to being a travel assistant, a ticket machine, and a mini transport encyclopedia.
+The goal of this European public transport app is to assist tourists with inter, intracity and international travel within European countries. The app will bring together information from various public transit operators, authorities, and live data sources, such as GTFS runtime and other APIs, to provide a comprehensive solution. The app aims to be a one-stop-shop for all transportation needs, serving as a map, travel companion, ticket vendor, and mini transport encyclopedia. The versatility of the app is a key aspect in its design, making it a valuable resource for travelers.
 
 ## Table of contents
 
@@ -60,21 +60,48 @@ Users are able to :
 
 ## My process
 
-I will be starting out with the frontend and i have chosen to use [Node.js](http://nodejs.org/) a React.js framework due to it's runtime environment. Node.Js is fast, efficient, and flexible which makes it perfect as this app will need to display quick and accurate real live datas. Node.js also uses non-blocking, event driven i/o to offer efficiency and remain lightweight in terms of in-memory usage to data intensive real time web applications that run in various distributed environments or devices.  It is easy to maintain 
+The focus while developing is more on reliablility, scalability and maintainability. This has guided the decision of making use of [Nest.js](https://docs.nestjs.com/) to develop the backend of this application. Nest is opinionated i.e has a defined structure which makes it less likely to face issues or errors in the long run.
 
+Nest.js is more reliable, has better performance in comparison to express.js and is scalable.  
+
+## Installation
+
+```bash
+$ npm install
+```
+
+## Running the app
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
+
+## Test
+
+```bash
+# unit tests
+$ npm run test
+
+# e2e tests
+$ npm run test:e2e
+
+# test coverage
+$ npm run test:cov
+``` 
 
 ### Will be built with
-
-- Semantic HTML5 markup
-- CSS custom properties
-- Java for backend 
-- Spring Boot 
 - Rest API to import all of the datas
-- [Node.js](http://nodejs.org/) - React framework
-- [Express.js](https://expressjs.com) - Node framework
-- [Next.js](https://nextjs.org/) - React framework
-- [Styled Components](https://styled-components.com/) - For styles
-
+- [Node Postgres](https://node-postgres.com/) 
+- [Nest.js](https://docs.nestjs.com/) 
+- [Swagger](https://swagger.io/docs/)
+- [Postman](https://web.postman.co/)
 
 ### What I learned
 
@@ -88,4 +115,3 @@ I will be starting out with the frontend and i have chosen to use [Node.js](http
 - Linkedin- [Ebi Kpemi-Ogokimi](https://www.linkedin.com/in/ebi-kpemi-ogokimi/)
 - Hashnode- [@Ebi's dev life](https://ebixx.hashnode.dev)
 - Twitter - [@lifewithebi](https://twitter.com/lifewithebi)
-

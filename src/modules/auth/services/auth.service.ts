@@ -1,60 +1,68 @@
-import { Injectable } from '@nestjs/common'
-import { BadRequestException } from '@nestjs/common/exceptions'
-import { PrismaService } from 'prisma/services/prisma.service'
+import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common'
+import {PrismaService} from '../../../../prisma/services/prisma.service'
 import { LoginDto } from '../dtos/login.dto'
 import { SignupDto } from '../dtos/signup.dto'
 import * as bcrypt from 'bcrypt'
-import { AuthToken } from '../interfaces/jwt-payload.interface'
+import { JwtService } from '@nestjs/jwt'
+import { JwtPayload } from '../interfaces/jwt-payload.interface'
+import { jwtSecret } from '../../../../utils/constant'
+import { Request, Response } from 'express'
 
 
 @Injectable()
 export class AuthService {
-	JwtService: any
-	constructor(private prisma: PrismaService, private jwtPayLoad: AuthToken) {}
-	async authenticateLogin(dto:LoginDto): Promise<any> {
-	const {email, password} = dto
-	const foundUser = await this.prisma.user.findUnique({where: {email}})
-	 if (!foundUser) {
-	 	throw new BadRequestException('User does not exist')
-		}
-		const passwordMatch = await this.comparePassword(
-			password, 
-			foundUser.hashedPassword
-			)
-		if (!passwordMatch) {
-			throw new BadRequestException('Incorrect email or password')
-		}
-		const token = await this.jwtPayLoad({ id: foundUser.id, email: foundUser.email })
-		return { token }
-	}
+	constructor(
+		private prisma: PrismaService,
+		private JwtService: JwtService
+	) {}
 
-	async authorizeLogin(username: string, resource: string): Promise<boolean> {
-		// Perform authorization logic here (e.g., check against a database)
-		// Return true if the authorization is successful, false otherwise
-		return true;
-	}
-	
-	async userSignup(dto:SignupDto): Promise<any> {	
+	async signup(dto: SignupDto) {
 		const {email, username, password} = dto
-		const userExist = await this.prisma.user.findUnique({where: {email}})
-	if (userExist) {
-		throw new BadRequestException('User already exist')
+		const userExist = await this.prisma.user.findUnique({
+			where: {
+				email,
+			}})
+		if (userExist) {
+			throw new BadRequestException('User already exist')
 		}
 		const hashedPassword = await this.hashPassword(password)
-		const newUser = await this.prisma.user.create({
+		 await this.prisma.user.create({
 			data: {
 				username,
-				email,	
+				email,
 				hashedPassword,
 			},
 		})
-		return { message: 'User created successfully' }
+		return {message: 'User created successfully'}
 	}
-	
-	async userSignOut(): Promise<any> {	
-		// Perform authentication logic here (e.g., check against a database)
-		// Return true if the authentication is successful, false otherwise
-		return { message: 'User logged out successfully'}
+
+	async login(dto: LoginDto, req: Request, res: Response) {
+		const {email, password} = dto
+		const foundUser = await this.prisma.user.findUnique({
+			where: {
+				email,
+			}})
+		if (!foundUser) {
+			throw new BadRequestException('User does not exist')
+		}
+		const passwordMatch = await this.comparePassword(password, foundUser.hashedPassword)
+		if (!passwordMatch) {
+			throw new BadRequestException('Incorrect email or password')
+		}
+		const token = await this.signToken({
+			id: foundUser.id, 
+			email: foundUser.email
+		})
+		if (!token) {
+			throw new ForbiddenException('Unable to login')
+		}
+		res.cookie('token', token, {})
+		return res.send({ message: 'You have been logged in successfully' })
+	}
+
+	async signout(req: Request, res: Response) {
+        res.clearCookie('token')
+		return res.send({ message: 'You have been logged out successfully' })
 	}
 
 	async hashPassword(password: string) {
@@ -65,5 +73,11 @@ export class AuthService {
 	async comparePassword(password: string, hashedPassword: string) {
 		const isPasswordMatch = await bcrypt.compare(password, hashedPassword)
 		return isPasswordMatch
+	}
+	async signToken(payload: JwtPayload): Promise<string> {
+		const token = await this.JwtService.signAsync(payload, {
+			secret: jwtSecret,
+		})
+		return token
 	}
 }

@@ -1,6 +1,5 @@
 import {Injectable} from '@nestjs/common'
-import {IsEmail, IsNotEmpty, IsString, Length, IsOptional } from 'class-validator'
-
+import {IsEmail, IsNotEmpty, IsString, Length, IsOptional, Matches } from 'class-validator'
 
 	export class SignupDto {
 	@IsString()
@@ -12,12 +11,9 @@ import {IsEmail, IsNotEmpty, IsString, Length, IsOptional } from 'class-validato
 
 	@IsNotEmpty()
 	@IsString()
-	@Length(8, 20, {
-		message: 'Password must be between 8 and 20 characters and contain a symbol and a number',
+	@Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,15}$/,
+	{
+		message: 'Password must be between 8 and 15 characters and contain a symbol and a number',
 	})
-	public password: string
-
-	@IsOptional()
-	@IsString()
-	confirmPassword?: string
+	readonly password: string
 }

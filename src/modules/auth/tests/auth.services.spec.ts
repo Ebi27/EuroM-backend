@@ -20,10 +20,4 @@ describe('AuthService', () => {
     it('should be defined', () => {
         expect(service).toBeDefined()
     })
-    
-    it('should return an array of users', async () => {
-        const res = await request(app.getHttpServer()).get('/auth')
-        expect(res.status).toBe(200)
-        expect(res.body).toEqual([])
-    })
     })

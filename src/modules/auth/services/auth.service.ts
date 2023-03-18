@@ -1,83 +1,44 @@
-import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common'
-import {PrismaService} from '../../../../prisma/services/prisma.service'
-import { LoginDto } from '../dtos/login.dto'
+import { Injectable } from '@nestjs/common'
+import { ForgotPasswordDto } from '../dtos/forgot-password.dto'
+import { LoginService } from './local/login.service'
+import { SignupService } from './local/signup.service'
+import { PasswordResetService } from './local/password-reset.service'
 import { SignupDto } from '../dtos/signup.dto'
-import * as bcrypt from 'bcrypt'
-import { JwtService } from '@nestjs/jwt'
-import { JwtPayload } from '../interfaces/jwt-payload.interface'
-import { jwtSecret } from '../../../../utils/constant'
-import { Request, Response } from 'express'
-
+import { LoginDto } from '../dtos/login.dto'
+import { ResetPasswordDto } from '../dtos/reset-password.dto'
+import {Request, Response} from 'express'
 
 @Injectable()
 export class AuthService {
 	constructor(
-		private prisma: PrismaService,
-		private JwtService: JwtService
-	) {}
+		private loginService: LoginService, 
+		private signupService: SignupService,
+		private resetPasswordService: PasswordResetService,
+		) {}
 
-	async signup(dto: SignupDto) {
-		const {email, username, password} = dto
-		const userExist = await this.prisma.user.findUnique({
-			where: {
-				email,
-			}})
-		if (userExist) {
-			throw new BadRequestException('User already exist')
-		}
-		const hashedPassword = await this.hashPassword(password)
-		 await this.prisma.user.create({
-			data: {
-				username,
-				email,
-				hashedPassword,
-			},
-		})
-		return {message: 'User created successfully'}
+
+   async signup(dto: SignupDto): Promise<any>{
+		return this.signupService.signup(dto)
 	}
-
+	
 	async login(dto: LoginDto, req: Request, res: Response) {
-		const {email, password} = dto
-		const foundUser = await this.prisma.user.findUnique({
-			where: {
-				email,
-			}})
-		if (!foundUser) {
-			throw new BadRequestException('User does not exist')
-		}
-		const passwordMatch = await this.comparePassword(password, foundUser.hashedPassword)
-		if (!passwordMatch) {
-			throw new BadRequestException('Incorrect email or password')
-		}
-		const token = await this.signToken({
-			id: foundUser.id, 
-			email: foundUser.email
-		})
-		if (!token) {
-			throw new ForbiddenException('Unable to login')
-		}
-		res.cookie('token', token, {})
-		return res.send({ message: 'You have been logged in successfully' })
+		return this.loginService.login(dto, req, res)
 	}
 
 	async signout(req: Request, res: Response) {
-        res.clearCookie('token')
-		return res.send({ message: 'You have been logged out successfully' })
+		res.clearCookie('token')
+		return res.send({message: 'You have been logged out successfully'})
+	}
+ 
+
+	async resetPassword(userId: number, resetPasswordDto: ResetPasswordDto) {
+		return this.resetPasswordService.resetPassword(userId, resetPasswordDto)
 	}
 
-	async hashPassword(password: string) {
-		const saltOrRounds = 10
-		const hashedPassword = await bcrypt.hash(password, saltOrRounds)
-		return hashedPassword
+	async forgotPassword(dto: ForgotPasswordDto, req: Request, res: Response) {
+		//send email to user with a link to reset password
 	}
-	async comparePassword(password: string, hashedPassword: string) {
-		const isPasswordMatch = await bcrypt.compare(password, hashedPassword)
-		return isPasswordMatch
-	}
-	async signToken(payload: JwtPayload): Promise<string> {
-		const token = await this.JwtService.signAsync(payload, {
-			secret: jwtSecret,
-		})
-		return token
-	}
+
+	
 }
+

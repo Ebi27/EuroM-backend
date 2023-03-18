@@ -8,9 +8,18 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
+  id           Int      @default(autoincrement())
   email        String   @unique
-  password String?
+  password     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt()
+  provider     String?  @default("local") 
+
+  @@id([id])
 }
+
+
+
+
+
+

@@ -1,29 +1,35 @@
-import { Controller, Post, Body } from '@nestjs/common'
+import { Controller, Post, Body , Get, Request, Response } from '@nestjs/common'
 import { AuthService } from '../services/auth.service'
+import { LoginDto } from '../dtos/login.dto'
+import { SignupDto } from '../dtos/signup.dto'
+import { ResetPasswordDto } from '../dtos/reset-password.dto'
 
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
-	@Post('login')
-	async login(@Body() body) {
-		const { username, password } = body
-		const success = await this.authService.authenticate(username, password)
-		if (success) {
-			// Generate a JWT or other token to represent the authenticated user
-		} else {
-			// Return an error indicating that the authentication failed
-		}
+	@Post('signup')
+	async signup(@Body() dto: SignupDto) {
+		return this.authService.signup(dto)
 	}
 
-	@Post('check')
-	async check(@Body() body) {
-		const { username, resource } = body
-		const authorized = await this.authService.authorize(username, resource)
-		if (authorized) {
-			// Return a success message indicating that the user is authorized to access the resource
-		} else {
-			// Return an error indicating that the authorization failed
-		}
+	@Post('login')
+	async login(@Request() req, @Response() res, @Body() dto: LoginDto) {
+		return this.authService.login(dto, req, res)
 	}
+
+	@Get('signout')
+	async signout(@Request() req, @Response() res) {
+		return this.authService.signout(req, res)
+	}
+
+	@Post('resetPassword')
+	async resetPassword(@Request() req, @Body() dto: ResetPasswordDto) {
+		return this.authService.resetPassword(req.user.id, dto)
+	}
+
+	// @Post('forgotPassword')
+	// async forgotPasword(@Request() req, @Response() res) {
+	// 	return this.authService.forgotPassword(req, res)
+	// }
 }
